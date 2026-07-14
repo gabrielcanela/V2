@@ -4,7 +4,8 @@
 Mantener una lista de precios actualizadas por proveedor, producto, familia y vigencia para permitir seleccionar el mejor precio de compra en una fecha determinada.
 
 **Personas:**
-Personales de la oficina de compras que debe decidir compras a granel para una empresa de catering.
+Personal de la oficina de compras que debe decidir compras a granel para una empresa de catering.
+Podría ser también utilizado por la gerencia
 
 **Nota:** no hay definido ningún control de acceso (por ejemplo, si distintos usuarios deben ver o no los mismos datos de precios). Si corresponde, falta agregar el/los requerimiento(s) y su(s) criterio(s) de aceptación correspondientes.
 
