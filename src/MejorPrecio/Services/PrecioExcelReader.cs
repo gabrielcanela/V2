@@ -28,10 +28,9 @@ public class PrecioExcelReader
                 Fila = numeroFila,
                 ProveedorCodigo = fila.Cell(1).GetString().Trim(),
                 ProductoProveedCodigo = fila.Cell(2).GetString().Trim(),
-                CategoriaCodigo = fila.Cell(3).GetString().Trim(),
-                PrecioTexto = fila.Cell(4).GetString().Trim(),
-                VigenciaDesdeTexto = fila.Cell(5).GetString().Trim(),
-                VigenciaHastaTexto = fila.Cell(6).GetString().Trim(),
+                PrecioTexto = fila.Cell(3).GetString().Trim(),
+                VigenciaDesdeTexto = fila.Cell(4).GetString().Trim(),
+                VigenciaHastaTexto = fila.Cell(5).GetString().Trim(),
             });
         }
 

@@ -18,5 +18,4 @@ public class Proveedor
     public string? ModalidadPed { get; set; }
 
     public ICollection<ProductoProveedor> Productos { get; set; } = new List<ProductoProveedor>();
-    public ICollection<Precio> Precios { get; set; } = new List<Precio>();
 }

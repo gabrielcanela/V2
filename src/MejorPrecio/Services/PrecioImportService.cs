@@ -27,17 +27,20 @@ public class PrecioImportService
     // Un único SaveChanges deja la persistencia atómica (todo o nada).
     public async Task GuardarAsync(List<PrecioImportRowValida> filas, CancellationToken ct = default)
     {
-        var entidades = filas.Select(f => new Precio
+        // Region y ComedorLP son NOT NULL en PrecioProveedor pero el Excel de importación
+        // no los captura todavía: Region se fija en "BUE" y ComedorLP queda en blanco.
+        var entidades = filas.Select(f => new PrecioProveedor
         {
             Proveedor = f.ProveedorCodigo,
-            ProductoProveed = f.ProductoProveedCodigo,
-            Categoria = f.CategoriaCodigo,
-            PrecioUnitario = f.PrecioUnitario,
-            VigenciaDesde = f.VigenciaDesde,
-            VigenciaHasta = f.VigenciaHasta,
+            Producto = f.ProductoProveedCodigo,
+            Region = "BUE",
+            FchDDe = f.VigenciaDesde,
+            FchHta = f.VigenciaHasta,
+            Precio = f.PrecioUnitario,
+            ComedorLP = string.Empty,
         });
 
-        _db.Precios.AddRange(entidades);
+        _db.PreciosProveedor.AddRange(entidades);
         await _db.SaveChangesAsync(ct);
     }
 }

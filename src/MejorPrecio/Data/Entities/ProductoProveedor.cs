@@ -8,5 +8,4 @@ public class ProductoProveedor
     public string? UnidadProveed { get; set; }
 
     public Proveedor ProveedorNavigation { get; set; } = null!;
-    public ICollection<Precio> Precios { get; set; } = new List<Precio>();
 }

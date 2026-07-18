@@ -13,49 +13,53 @@ public class PrecioConsultaService
         _db = db;
     }
 
-    // RF-18 a RF-21: filtra por fecha (vigencia), proveedor, familia y descripción de producto.
+    // RF-18, RF-19, RF-21: filtra por fecha (vigencia), proveedor y descripción de producto.
     // RF-23: el "producto" se identifica por su código (ProductoProveed), que es el código propio
     // de la empresa compartido entre los distintos proveedores que lo cotizan.
+    // PrecioProveedor no declara FK hacia Proveedor/ProductoProveedor, así que las descripciones
+    // se resuelven acá con joins explícitos en vez de navigation properties.
     public async Task<List<ConsultaPrecioRow>> BuscarAsync(ConsultaPrecioFiltro filtro, CancellationToken ct = default)
     {
-        var query = _db.Precios
+        var query = _db.PreciosProveedor
             .AsNoTracking()
-            .Where(p => p.VigenciaDesde <= filtro.Fecha && p.VigenciaHasta >= filtro.Fecha);
+            .Where(p => p.FchDDe <= filtro.Fecha && (p.FchHta == null || p.FchHta >= filtro.Fecha));
 
         if (!string.IsNullOrWhiteSpace(filtro.ProveedorCodigo))
         {
             query = query.Where(p => p.Proveedor == filtro.ProveedorCodigo);
         }
 
-        if (!string.IsNullOrWhiteSpace(filtro.CategoriaCodigo))
-        {
-            query = query.Where(p => p.Categoria == filtro.CategoriaCodigo);
-        }
+        var vigentesConProducto = query.Join(_db.ProductosProveedor,
+            p => new { p.Proveedor, Producto = p.Producto },
+            pp => new { pp.Proveedor, Producto = pp.ProductoProveed },
+            (p, pp) => new { Precio = p, ProductoDescripcion = pp.Descripcion });
 
         if (!string.IsNullOrWhiteSpace(filtro.DescripcionProducto))
         {
-            query = query.Where(p => p.ProductoProveedorNavigation.Descripcion.Contains(filtro.DescripcionProducto));
+            vigentesConProducto = vigentesConProducto.Where(x => x.ProductoDescripcion.Contains(filtro.DescripcionProducto));
         }
 
-        var preciosMinimosPorProducto = query
-            .GroupBy(p => p.ProductoProveed)
-            .Select(g => new { ProductoProveed = g.Key, PrecioMinimo = g.Min(p => p.PrecioUnitario) });
+        var preciosMinimosPorProducto = vigentesConProducto
+            .GroupBy(x => x.Precio.Producto)
+            .Select(g => new { Producto = g.Key, PrecioMinimo = g.Min(x => x.Precio.Precio) });
 
-        var candidatos = await query
+        var candidatos = await vigentesConProducto
             .Join(preciosMinimosPorProducto,
-                p => new { p.ProductoProveed, Precio = p.PrecioUnitario },
-                m => new { m.ProductoProveed, Precio = m.PrecioMinimo },
-                (p, _) => new ConsultaPrecioRow
+                x => new { x.Precio.Producto, Precio = x.Precio.Precio },
+                m => new { m.Producto, Precio = m.PrecioMinimo },
+                (x, _) => x)
+            .Join(_db.Proveedores,
+                x => x.Precio.Proveedor,
+                prov => prov.Codigo,
+                (x, prov) => new ConsultaPrecioRow
                 {
-                    ProveedorCodigo = p.Proveedor,
-                    ProveedorDescripcion = p.ProveedorNavigation.Descripcion,
-                    ProductoCodigo = p.ProductoProveed,
-                    ProductoDescripcion = p.ProductoProveedorNavigation.Descripcion,
-                    FamiliaCodigo = p.Categoria,
-                    FamiliaDescripcion = p.CategoriaNavigation.Descripcion,
-                    PrecioUnitario = p.PrecioUnitario,
-                    VigenciaDesde = p.VigenciaDesde,
-                    VigenciaHasta = p.VigenciaHasta,
+                    ProveedorCodigo = x.Precio.Proveedor,
+                    ProveedorDescripcion = prov.Descripcion,
+                    ProductoCodigo = x.Precio.Producto,
+                    ProductoDescripcion = x.ProductoDescripcion,
+                    PrecioUnitario = x.Precio.Precio,
+                    VigenciaDesde = x.Precio.FchDDe,
+                    VigenciaHasta = x.Precio.FchHta,
                 })
             .ToListAsync(ct);
 
@@ -64,7 +68,7 @@ public class PrecioConsultaService
         return candidatos
             .GroupBy(c => c.ProductoCodigo)
             .Select(g => g.OrderBy(c => c.ProveedorCodigo).First())
-            .OrderBy(c => c.FamiliaDescripcion, StringComparer.CurrentCultureIgnoreCase)
+            .OrderBy(c => c.ProductoDescripcion, StringComparer.CurrentCultureIgnoreCase)
             .ThenBy(c => c.PrecioUnitario)
             .ToList();
     }
@@ -75,15 +79,6 @@ public class PrecioConsultaService
             .AsNoTracking()
             .OrderBy(p => p.Descripcion)
             .Select(p => new ValueTuple<string, string>(p.Codigo, p.Descripcion))
-            .ToListAsync(ct);
-    }
-
-    public async Task<List<(string Codigo, string Descripcion)>> ObtenerCategoriasAsync(CancellationToken ct = default)
-    {
-        return await _db.Categorias
-            .AsNoTracking()
-            .OrderBy(c => c.Descripcion)
-            .Select(c => new ValueTuple<string, string>(c.Codigo, c.Descripcion))
             .ToListAsync(ct);
     }
 }

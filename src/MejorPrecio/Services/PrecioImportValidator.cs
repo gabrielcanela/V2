@@ -22,18 +22,10 @@ public class PrecioImportValidator
 
         var codigosProveedor = filas.Select(f => f.ProveedorCodigo)
             .Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().ToList();
-        var codigosCategoria = filas.Select(f => f.CategoriaCodigo)
-            .Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().ToList();
 
         var proveedoresExistentes = (await _db.Proveedores
                 .Where(p => codigosProveedor.Contains(p.Codigo))
                 .Select(p => p.Codigo)
-                .ToListAsync(ct))
-            .ToHashSet();
-
-        var categoriasExistentes = (await _db.Categorias
-                .Where(c => codigosCategoria.Contains(c.Codigo))
-                .Select(c => c.Codigo)
                 .ToListAsync(ct))
             .ToHashSet();
 
@@ -58,7 +50,6 @@ public class PrecioImportValidator
 
             var proveedorOk = ValidarProveedor(fila, proveedoresExistentes, errores);
             ValidarProducto(fila, proveedorOk, productosExistentes, errores);
-            ValidarCategoria(fila, categoriasExistentes, errores);
             var precioOk = ValidarPrecio(fila, errores, out var precio);
             var vigenciaDesdeOk = ValidarVigenciaDesde(fila, hoy, errores, out var vigenciaDesde);
             ValidarVigenciaHasta(fila, vigenciaDesdeOk, vigenciaDesde, errores, out var vigenciaHasta);
@@ -73,7 +64,6 @@ public class PrecioImportValidator
             {
                 ProveedorCodigo = fila.ProveedorCodigo,
                 ProductoProveedCodigo = fila.ProductoProveedCodigo,
-                CategoriaCodigo = fila.CategoriaCodigo,
                 PrecioUnitario = precio,
                 VigenciaDesde = vigenciaDesde,
                 VigenciaHasta = vigenciaHasta,
@@ -113,24 +103,6 @@ public class PrecioImportValidator
         if (proveedorOk && !productosExistentes.Contains((fila.ProveedorCodigo, fila.ProductoProveedCodigo)))
         {
             errores.Add($"Código de producto inexistente para el proveedor {fila.ProveedorCodigo}");
-            return false;
-        }
-
-        return true;
-    }
-
-    // RF-05, RF-06
-    private static bool ValidarCategoria(PrecioImportRow fila, HashSet<string> categoriasExistentes, List<string> errores)
-    {
-        if (string.IsNullOrWhiteSpace(fila.CategoriaCodigo))
-        {
-            errores.Add("Falta familia");
-            return false;
-        }
-
-        if (!categoriasExistentes.Contains(fila.CategoriaCodigo))
-        {
-            errores.Add("Familia inexistente");
             return false;
         }
 

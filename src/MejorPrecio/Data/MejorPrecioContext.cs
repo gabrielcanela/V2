@@ -13,7 +13,7 @@ public class MejorPrecioContext : DbContext
     public DbSet<Proveedor> Proveedores => Set<Proveedor>();
     public DbSet<ProductoProveedor> ProductosProveedor => Set<ProductoProveedor>();
     public DbSet<Categoria> Categorias => Set<Categoria>();
-    public DbSet<Precio> Precios => Set<Precio>();
+    public DbSet<PrecioProveedor> PreciosProveedor => Set<PrecioProveedor>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -64,40 +64,25 @@ public class MejorPrecioContext : DbContext
             entity.Property(e => e.Presentar).HasMaxLength(3).IsUnicode(false).IsRequired();
         });
 
-        // Precio: única tabla nueva, gestionada por las migraciones de este proyecto.
-        modelBuilder.Entity<Precio>(entity =>
+        // PrecioProveedor: tabla existente de la base real, igual que las tablas maestras
+        // de arriba, por eso también queda excluida de las migraciones.
+        modelBuilder.Entity<PrecioProveedor>(entity =>
         {
-            entity.ToTable("Precio");
-            entity.HasKey(e => e.Id);
+            entity.ToTable("PrecioProveedor", t => t.ExcludeFromMigrations());
+            entity.HasKey(e => e.Precioid);
+            entity.Property(e => e.Precioid).HasColumnType("numeric(18,0)");
             entity.Property(e => e.Proveedor).HasMaxLength(10).IsUnicode(false).IsRequired();
-            entity.Property(e => e.ProductoProveed).HasMaxLength(20).IsUnicode(false).IsRequired();
-            entity.Property(e => e.Categoria).HasMaxLength(3).IsUnicode(false).IsRequired();
-            entity.Property(e => e.PrecioUnitario).HasColumnType("decimal(18,2)");
-            entity.Property(e => e.VigenciaDesde).HasColumnType("date");
-            entity.Property(e => e.VigenciaHasta).HasColumnType("date");
-
-            entity.HasOne(e => e.ProveedorNavigation)
-                .WithMany(p => p.Precios)
-                .HasForeignKey(e => e.Proveedor)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasOne(e => e.CategoriaNavigation)
-                .WithMany(c => c.Precios)
-                .HasForeignKey(e => e.Categoria)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasOne(e => e.ProductoProveedorNavigation)
-                .WithMany(pp => pp.Precios)
-                .HasForeignKey(e => new { e.Proveedor, e.ProductoProveed })
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // RNF-04: la consulta filtra siempre por vigencia y suele acotar por familia,
-            // y agrupa/ordena por producto — estos índices cubren esos accesos.
-            entity.HasIndex(e => new { e.VigenciaDesde, e.VigenciaHasta, e.Categoria })
-                .HasDatabaseName("IX_Precio_Vigencia_Categoria");
-
-            entity.HasIndex(e => e.ProductoProveed)
-                .HasDatabaseName("IX_Precio_ProductoProveed");
+            entity.Property(e => e.Producto).HasMaxLength(50).IsUnicode(false).IsRequired();
+            entity.Property(e => e.Region).HasMaxLength(3).IsUnicode(false).IsRequired();
+            entity.Property(e => e.FchDDe).HasColumnType("date");
+            entity.Property(e => e.FchHta).HasColumnType("date");
+            entity.Property(e => e.Precio).HasColumnType("numeric(10,2)");
+            entity.Property(e => e.FchCreacion).HasColumnType("datetime");
+            entity.Property(e => e.Zona).HasMaxLength(10).IsUnicode(false);
+            entity.Property(e => e.ListaprecioId).HasColumnType("numeric(18,0)");
+            entity.Property(e => e.EstadoLP).HasColumnType("numeric(1,0)");
+            entity.Property(e => e.ComedorLP).HasMaxLength(10).IsUnicode(false).IsRequired();
+            entity.Property(e => e.TipoPrecio).HasMaxLength(1).IsUnicode(false);
         });
     }
 }

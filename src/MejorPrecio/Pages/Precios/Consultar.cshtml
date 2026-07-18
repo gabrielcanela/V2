@@ -22,16 +22,6 @@
         </select>
     </div>
     <div class="col-md-3">
-        <label asp-for="CategoriaCodigo" class="form-label">Familia</label>
-        <select asp-for="CategoriaCodigo" class="form-select">
-            <option value="">Todas las familias</option>
-            @foreach (var categoria in Model.Categorias)
-            {
-                <option value="@categoria.Codigo">@categoria.Descripcion</option>
-            }
-        </select>
-    </div>
-    <div class="col-md-3">
         <label asp-for="DescripcionProducto" class="form-label"></label>
         <input asp-for="DescripcionProducto" class="form-control" placeholder="Descripción del producto (opcional)" />
     </div>
@@ -53,7 +43,6 @@ else
                 <th>Descripción del proveedor</th>
                 <th>Código de producto</th>
                 <th>Descripción del producto</th>
-                <th>Familia</th>
                 <th>Precio unitario</th>
                 <th>Vigencia desde</th>
                 <th>Vigencia hasta</th>
@@ -67,10 +56,9 @@ else
                     <td>@fila.ProveedorDescripcion</td>
                     <td>@fila.ProductoCodigo</td>
                     <td>@fila.ProductoDescripcion</td>
-                    <td>@fila.FamiliaDescripcion</td>
                     <td>@fila.PrecioUnitario.ToString("N2")</td>
                     <td>@fila.VigenciaDesde.ToString("dd/MM/yyyy")</td>
-                    <td>@fila.VigenciaHasta.ToString("dd/MM/yyyy")</td>
+                    <td>@(fila.VigenciaHasta?.ToString("dd/MM/yyyy"))</td>
                 </tr>
             }
         </tbody>
