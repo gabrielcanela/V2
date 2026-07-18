@@ -20,7 +20,7 @@ Al importar el Excel de precios deben validarse las siguientes reglas, fila por 
 - RF-03: El código de producto no debe ser un valor vacío.
 - RF-04: El código de producto debe existir en la tabla ProductoProveedor de la base de datos para ese proveedor.
 - RF-05: La familia no debe ser un valor vacío.
-- RF-06: La familia debe existir en la tabla Familia de la base de datos.
+- RF-06: La familia debe existir en la tabla Categoria de la base de datos.
 - RF-07: El precio no debe ser un valor vacío.
 - RF-08: El precio debe ser un número válido.
 - RF-09: El precio debe tener dos lugares decimales.
@@ -55,7 +55,7 @@ Sobre la consulta de precios:
 - AC-03 (RF-03): Dado que la celda de Excel en la columna de código de producto está vacía, cuando se procese el archivo, entonces debe mostrar un cartel "Falta código de producto".
 - AC-04 (RF-04): Dado que la celda de Excel en la columna de código de producto tiene una combinación de código de producto y código de proveedor inexistente en la tabla ProductoProveedor, cuando se procese el archivo, entonces debe mostrar un cartel "Código de producto inexistente para el proveedor xxx".
 - AC-05 (RF-05): Dado que la celda de Excel en la columna de familia está vacía, cuando se procese el archivo, entonces debe mostrar un cartel "Falta familia".
-- AC-06 (RF-06): Dado que la celda de Excel en la columna de familia tiene una familia inexistente en la tabla Familia, cuando se procese el archivo, entonces debe mostrar un cartel "Familia inexistente".
+- AC-06 (RF-06): Dado que la celda de Excel en la columna de familia tiene una familia inexistente en la tabla Categoria, cuando se procese el archivo, entonces debe mostrar un cartel "Familia inexistente".
 - AC-07 (RF-07): Dado que la celda de Excel en la columna de precio unitario está vacía, cuando se procese el archivo, entonces debe mostrar un cartel "Falta Precio".
 - AC-08 (RF-08): Dado que la celda de Excel de precio unitario tiene un contenido no numérico, cuando se procese el archivo, entonces debe mostrar un cartel "Precio no es un número válido".
 - AC-09 (RF-09): Dado que la celda de Excel de precio unitario tiene un valor con una cantidad de decimales distinta a dos, cuando se procese el archivo, entonces debe mostrar un cartel "El precio debe tener exactamente dos decimales".
