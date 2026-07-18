@@ -1,0 +1,65 @@
+@page
+@model MejorPrecio.Pages.Precios.ImportarModel
+@{
+    ViewData["Title"] = "Importar precios";
+}
+
+<h1>Importar lista de precios</h1>
+<p class="text-muted">
+    Subí un Excel con las columnas, en este orden: Código de proveedor, Código de producto, Familia,
+    Precio unitario, Vigencia desde, Vigencia hasta.
+</p>
+
+@if (Model.CantidadImportada is not null)
+{
+    <div class="alert alert-success">
+        Lista de precios actualizada: @Model.CantidadImportada fila(s) importada(s) correctamente.
+    </div>
+}
+
+@if (Model.Errores.Count > 0)
+{
+    <div class="alert alert-danger">
+        <p><strong>El archivo tiene @Model.Errores.Count error(es). No se actualizó la base de datos.</strong></p>
+        <table class="table table-sm table-striped mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 6rem;">Fila</th>
+                    <th>Error</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var error in Model.Errores.OrderBy(e => e.Fila))
+                {
+                    <tr>
+                        <td>@error.Fila</td>
+                        <td>@error.Mensaje</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (Model.MostrarConfirmacion)
+{
+    <div class="alert alert-info">
+        <p>El archivo es válido: se importarían <strong>@Model.CantidadFilasValidas</strong> fila(s).</p>
+        <form method="post" class="d-inline">
+            <button type="submit" asp-page-handler="Confirmar" class="btn btn-primary">Confirmar actualización</button>
+        </form>
+        <form method="post" class="d-inline">
+            <button type="submit" asp-page-handler="Cancelar" class="btn btn-secondary">Cancelar</button>
+        </form>
+    </div>
+}
+else
+{
+    <form method="post" asp-page-handler="Validar" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="archivo" class="form-label">Archivo Excel (.xlsx)</label>
+            <input type="file" class="form-control" id="archivo" name="archivo" accept=".xlsx" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Validar archivo</button>
+    </form>
+}

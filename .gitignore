@@ -1,0 +1,12 @@
+## .NET
+bin/
+obj/
+*.user
+
+## IDE
+.vs/
+.vscode/
+
+## Config local con secretos (connection string real)
+appsettings.Development.json
+appsettings.Local.json
